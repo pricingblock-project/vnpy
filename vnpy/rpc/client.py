@@ -4,7 +4,9 @@ from functools import lru_cache
 from typing import Any
 
 import zmq
-from zmq.backend.cython.constants import NOBLOCK
+
+# from zmq.backend.cython.constants import NOBLOCK
+from zmq import NOBLOCK
 
 from .common import HEARTBEAT_TOPIC, HEARTBEAT_TOLERANCE
 
@@ -42,8 +44,8 @@ class RpcClient:
         self._socket_sub: zmq.Socket = self._context.socket(zmq.SUB)
 
         # Worker thread relate, used to process data pushed from server
-        self._active: bool = False                 # RpcClient status
-        self._thread: threading.Thread = None      # RpcClient thread
+        self._active: bool = False  # RpcClient status
+        self._thread: threading.Thread = None  # RpcClient thread
         self._lock: threading.Lock = threading.Lock()
 
         self._last_received_ping: datetime = datetime.utcnow()
@@ -85,11 +87,7 @@ class RpcClient:
 
         return dorpc
 
-    def start(
-        self,
-        req_address: str,
-        sub_address: str
-    ) -> None:
+    def start(self, req_address: str, sub_address: str) -> None:
         """
         Start RpcClient
         """

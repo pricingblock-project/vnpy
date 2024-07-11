@@ -22,7 +22,7 @@ from .event import (
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
     EVENT_LOG,
-    EVENT_QUOTE
+    EVENT_QUOTE,
 )
 from .gateway import BaseGateway
 from .object import (
@@ -40,7 +40,7 @@ from .object import (
     PositionData,
     AccountData,
     ContractData,
-    Exchange
+    Exchange,
 )
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR
@@ -64,8 +64,8 @@ class MainEngine:
         self.apps: Dict[str, BaseApp] = {}
         self.exchanges: List[Exchange] = []
 
-        os.chdir(TRADER_DIR)    # Change working directory
-        self.init_engines()     # Initialize function engines
+        os.chdir(TRADER_DIR)  # Change working directory
+        self.init_engines()  # Initialize function engines
 
     def add_engine(self, engine_class: Any) -> "BaseEngine":
         """
@@ -75,7 +75,9 @@ class MainEngine:
         self.engines[engine.engine_name] = engine
         return engine
 
-    def add_gateway(self, gateway_class: Type[BaseGateway], gateway_name: str = "") -> BaseGateway:
+    def add_gateway(
+        self, gateway_class: Type[BaseGateway], gateway_name: str = ""
+    ) -> BaseGateway:
         """
         Add gateway.
         """
@@ -123,6 +125,7 @@ class MainEngine:
         """
         Return gateway object by name.
         """
+        print(gateway_name)
         gateway = self.gateways.get(gateway_name, None)
         if not gateway:
             self.write_log(f"找不到底层接口：{gateway_name}")
@@ -216,7 +219,9 @@ class MainEngine:
         if gateway:
             gateway.cancel_quote(req)
 
-    def query_history(self, req: HistoryRequest, gateway_name: str) -> Optional[List[BarData]]:
+    def query_history(
+        self, req: HistoryRequest, gateway_name: str
+    ) -> Optional[List[BarData]]:
         """
         Query bar history data from a specific gateway.
         """
@@ -279,9 +284,7 @@ class LogEngine(BaseEngine):
         self.logger: Logger = logging.getLogger("veighna")
         self.logger.setLevel(self.level)
 
-        self.formatter = logging.Formatter(
-            "%(asctime)s  %(levelname)s: %(message)s"
-        )
+        self.formatter = logging.Formatter("%(asctime)s  %(levelname)s: %(message)s")
 
         self.add_null_handler()
 
@@ -289,7 +292,7 @@ class LogEngine(BaseEngine):
             self.add_console_handler()
 
         if SETTINGS["log.file"]:
-            self.add_file_handler()
+            self.add_file_handler(SETTINGS["log.file"])
 
         self.register_event()
 
@@ -309,18 +312,19 @@ class LogEngine(BaseEngine):
         console_handler.setFormatter(self.formatter)
         self.logger.addHandler(console_handler)
 
-    def add_file_handler(self) -> None:
+    def add_file_handler(self, filename) -> None:
         """
         Add file output of log.
         """
-        today_date = datetime.now().strftime("%Y%m%d")
-        filename = f"vt_{today_date}.log"
+        # tradingking_start 20220928
+        # 传入log文件名称
+        # today_date = datetime.now().strftime("%Y%m%d")
+        # filename = f"vt_{today_date}.log"
+        # tradingking_end 20220928
         log_path = get_folder_path("log")
         file_path = log_path.joinpath(filename)
 
-        file_handler = logging.FileHandler(
-            file_path, mode="a", encoding="utf8"
-        )
+        file_handler = logging.FileHandler(file_path, mode="a", encoding="utf8")
         file_handler.setLevel(self.level)
         file_handler.setFormatter(self.formatter)
         self.logger.addHandler(file_handler)
@@ -598,9 +602,7 @@ class EmailEngine(BaseEngine):
                 with smtplib.SMTP_SSL(
                     SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
-                    smtp.login(
-                        SETTINGS["email.username"], SETTINGS["email.password"]
-                    )
+                    smtp.login(SETTINGS["email.username"], SETTINGS["email.password"])
                     smtp.send_message(msg)
             except Empty:
                 pass
